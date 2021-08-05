@@ -37,7 +37,7 @@ contract MineNftGweiItem is
 
     mapping(uint256 => TokenConfig) tokenConfigs;
 
-    MineNftToken algop;
+    MineNftToken nft;
     address payable devAddress;
 
     event NewPaint(
@@ -46,13 +46,13 @@ contract MineNftGweiItem is
         bytes32 indexed hash
     );
 
-    constructor(MineNftToken _algop, address payable _devAddress)
+    constructor(MineNftToken _nft, address payable _devAddress)
         ERC721("Algo Painter Gwei Item", "APGI")
     {
         owner = msg.sender;
         whitelist[owner] = true;
         canSetSpecialPlaces = true;
-        algop = _algop;
+        nft = _nft;
         devAddress = _devAddress;
     }
 
@@ -173,7 +173,7 @@ contract MineNftGweiItem is
     {
         require(_mineNftId == 0, "MineNftGweiItem:INVALID_ID");
         address[] memory addresses;
-        addresses[0] = address(algop);
+        addresses[0] = address(nft);
 
         return addresses;
     }
@@ -311,7 +311,7 @@ contract MineNftGweiItem is
         uint256 amount = getCurrentAmount(totalSupply());
 
         require(
-            algop.allowance(msg.sender, address(this)) >= amount,
+            nft.allowance(msg.sender, address(this)) >= amount,
             "MineNftGweiItem:MINIMUM_ALLOWANCE_REQUIRED"
         );
 
@@ -321,7 +321,7 @@ contract MineNftGweiItem is
         );
 
         collectedAmount += amount;
-        algop.transferFrom(msg.sender, devAddress, amount);
+        nft.transferFrom(msg.sender, devAddress, amount);
 
         _tokenIds.increment();
 

@@ -6,4 +6,4 @@ https://www.minenft.live
 
 ### BSCMAINNET
 
-- ALGOP Token - https://bscscan.com/token/0xbee554dbbc677eb9fb711f5e939a2f2302598c75
+- MNT Token - https://bscscan.com/address/0x20ee977c5b98191b44cada9dea4c0dfe086f7950#code

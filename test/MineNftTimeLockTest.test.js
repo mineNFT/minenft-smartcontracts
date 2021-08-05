@@ -4,14 +4,14 @@ var sleep = require('sleep');
 
 contract('MineNftToken', accounts => {
   it('should schedule a sequence of payments and request them', async () => {
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, 0);
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, 0);
 
-    await algop.transfer(timelock.address, web3.utils.toWei('10000', 'ether'));
+    await nft.transfer(timelock.address, web3.utils.toWei('10000', 'ether'));
 
     await timelock.requestPayment({ from: accounts[1] });
     let remainingAmount = await timelock.getRemainingAmount(accounts[1]);
-    let balanceAfterRequestAccount1 = await algop.balanceOf(accounts[1]);
+    let balanceAfterRequestAccount1 = await nft.balanceOf(accounts[1]);
     expect(balanceAfterRequestAccount1.toString()).to.be.equal('0', 'fail to check payment #-1 account #1');
     expect(remainingAmount.toString()).to.be.equal('0', 'fail to check remaining amount #-1 account #1');
 
@@ -29,7 +29,7 @@ contract('MineNftToken', accounts => {
 
     await timelock.requestPayment({ from: accounts[1] });
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
-    balanceAfterRequestAccount1 = await algop.balanceOf(accounts[1]);
+    balanceAfterRequestAccount1 = await nft.balanceOf(accounts[1]);
     expect(balanceAfterRequestAccount1.toString()).to.be.equal('0', 'fail to check payment #0 account #1');
     expect(remainingAmount.toString()).to.be.equal('6000000000000000000', 'fail to check remaining amount #0 account #1');
 
@@ -38,7 +38,7 @@ contract('MineNftToken', accounts => {
 
     await timelock.requestPayment({ from: accounts[1] });
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
-    balanceAfterRequestAccount1 = await algop.balanceOf(accounts[1]);
+    balanceAfterRequestAccount1 = await nft.balanceOf(accounts[1]);
     expect(balanceAfterRequestAccount1.toString()).to.be.equal('1000000000000000000', 'fail to check payment #1 account #1');
     expect(remainingAmount.toString()).to.be.equal('5000000000000000000', 'fail to check remaining amount #1 account #1');
 
@@ -47,7 +47,7 @@ contract('MineNftToken', accounts => {
 
     await timelock.requestPayment({ from: accounts[1] });
 
-    balanceAfterRequestAccount1 = await algop.balanceOf(accounts[1]);
+    balanceAfterRequestAccount1 = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(balanceAfterRequestAccount1.toString()).to.be.equal('3000000000000000000', 'fail to check payment #2 account #1');
     expect(remainingAmount.toString()).to.be.equal('3000000000000000000', 'fail to check remaining amount #2 account #1');
@@ -57,7 +57,7 @@ contract('MineNftToken', accounts => {
 
     await timelock.requestPayment({ from: accounts[1] });
     remainingAmount = await await timelock.getRemainingAmount(accounts[1]);
-    balanceAfterRequestAccount1 = await algop.balanceOf(accounts[1]);
+    balanceAfterRequestAccount1 = await nft.balanceOf(accounts[1]);
     expect(balanceAfterRequestAccount1.toString()).to.be.equal('6000000000000000000', 'fail to check payment #3 account #1');
     expect(remainingAmount.toString()).to.be.equal('0', 'fail to check remaining amount #3 account #1');
   });
@@ -66,10 +66,10 @@ contract('MineNftToken', accounts => {
     const now = new Date();
     now.setSeconds(now.getSeconds() + 20);
     
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, Math.floor(now / 1000));
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, Math.floor(now / 1000));
     
-    await algop.transfer(timelock.address, web3.utils.toWei('10000', 'ether'));
+    await nft.transfer(timelock.address, web3.utils.toWei('10000', 'ether'));
     console.log(1)
     try {
       await timelock.emergencyWithdraw(web3.utils.toWei('10000', 'ether'));
@@ -92,19 +92,19 @@ contract('MineNftToken', accounts => {
     const now = new Date();
     now.setSeconds(now.getSeconds() + 20);
     
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, Math.floor(now / 1000));
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, Math.floor(now / 1000));
     await timelock.grantRole(await timelock.EMERGENCY_ROLE(), accounts[9]);
     
-    await algop.transfer(timelock.address, web3.utils.toWei('100000000', 'ether'));
-    let balance = await algop.balanceOf(accounts[0]);
+    await nft.transfer(timelock.address, web3.utils.toWei('100000000', 'ether'));
+    let balance = await nft.balanceOf(accounts[0]);
     expect(balance.toString()).to.be.equal('0', 'fail to check the balance after transfer');
 
 
     console.log('Waiting 20s to emergencyWithdraw');
     sleep.sleep(25);
     await timelock.emergencyWithdraw(web3.utils.toWei('100000000', 'ether'), {from: accounts[9]});
-    balance = await algop.balanceOf(accounts[9]);
+    balance = await nft.balanceOf(accounts[9]);
     expect(balance.toString()).to.be.equal( web3.utils.toWei('100000000', 'ether').toString(), 'fail to check the balance after emergency withdraw');
   });
 
@@ -112,10 +112,10 @@ contract('MineNftToken', accounts => {
     const now = new Date();
     now.setSeconds(now.getSeconds() + 20);
     
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, Math.floor(now / 1000).toString());
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, Math.floor(now / 1000).toString());
     
-    await algop.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
+    await nft.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
 
     expect((await timelock.getEmergencyWithdrawLimit()).toString()).to.be.equal(Math.floor(now / 1000).toString(), 'fail to check emergency withdraw release time');
 
@@ -128,7 +128,7 @@ contract('MineNftToken', accounts => {
    
     for (let i = 1; i < 10; i++) {
       await timelock.requestPayment({ from: accounts[i] });
-      const balance = await algop.balanceOf(accounts[i]);
+      const balance = await nft.balanceOf(accounts[i]);
       expect(balance.toString()).to.be.equal('0', `fail to check #${i}`);
     }
 
@@ -137,7 +137,7 @@ contract('MineNftToken', accounts => {
 
     for (let i = 1; i < 10; i++) {
       await timelock.requestPayment({ from: accounts[i] });
-      const balance = await algop.balanceOf(accounts[i]);
+      const balance = await nft.balanceOf(accounts[i]);
       expect(balance.toString()).to.be.equal(web3.utils.toWei(i.toString()), `fail to check #${i} #2`);
     }
 
@@ -146,7 +146,7 @@ contract('MineNftToken', accounts => {
 
     for (let i = 1; i < 10; i++) {
       await timelock.requestPayment({ from: accounts[i] });
-      const balance = await algop.balanceOf(accounts[i]);
+      const balance = await nft.balanceOf(accounts[i]);
       expect(balance.toString()).to.be.equal(web3.utils.toWei((i+i).toString()), `fail to check #${i} #3`);
     }
   });
@@ -155,12 +155,12 @@ contract('MineNftToken', accounts => {
     const now = new Date();
     now.setSeconds(now.getSeconds() + 20);
     
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, Math.floor(now / 1000).toString());
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, Math.floor(now / 1000).toString());
 
     const ref = await timelock.getNow();
 
-    await algop.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
+    await nft.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
 
     for (let i = 1; i <= 9; i++) {
       await timelock.schedulePayments(await timelock.addSeconds(ref, 10), await timelock.getSecondInterval(10), 0, 3, accounts[i], web3.utils.toWei(i.toString(), 'ether'));
@@ -177,7 +177,7 @@ contract('MineNftToken', accounts => {
 
       for (let j = 1; j <= 9; j++) {
         await timelock.requestPayment({ from: accounts[j] });
-        const balance = await algop.balanceOf(accounts[j]);
+        const balance = await nft.balanceOf(accounts[j]);
         expect(balance.toString()).to.be.equal(web3.utils.toWei((i*j).toString()).toString(), `fail to check balance account #${j} payment #${i}`);
       }
     }
@@ -187,17 +187,17 @@ contract('MineNftToken', accounts => {
     const now = new Date();
     now.setSeconds(now.getSeconds() + 20);
     
-    const algop = await MineNftToken.new('MineNft Token', 'ALGOP');
-    const timelock = await MineNftTimeLock.new(algop.address, Math.floor(now / 1000).toString());
+    const nft = await MineNftToken.new('MineNft Token', 'NFT');
+    const timelock = await MineNftTimeLock.new(nft.address, Math.floor(now / 1000).toString());
 
     const ref = await timelock.getNow();
 
-    await algop.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
+    await nft.transfer(timelock.address, web3.utils.toWei('1000', 'ether'));
 
     await timelock.schedulePayments(await timelock.addSeconds(ref, 10), await timelock.getSecondInterval(10), 2, 6, accounts[1], web3.utils.toWei('1', 'ether'));
 
     await timelock.requestPayment({ from: accounts[1] });
-    let balance = await algop.balanceOf(accounts[1]);
+    let balance = await nft.balanceOf(accounts[1]);
     let remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('6000000000000000000', 'remaining amount #0 period');
     expect(balance.toString()).to.be.equal('0', '');
@@ -205,7 +205,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #1`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('6000000000000000000', 'remaining amount #1 period');
     expect(balance.toString()).to.be.equal('0', '');
@@ -213,7 +213,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #2`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('4000000000000000000', 'remaining amount #2 period');
     expect(balance.toString()).to.be.equal('2000000000000000000', '');
@@ -221,7 +221,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #3`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('3000000000000000000', 'remaining amount #3 period');
     expect(balance.toString()).to.be.equal('3000000000000000000', '');
@@ -229,7 +229,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #4`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('2000000000000000000', 'remaining amount #4 period');
     expect(balance.toString()).to.be.equal('4000000000000000000', '');
@@ -237,7 +237,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #5`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('1000000000000000000', 'remaining amount #4 period');
     expect(balance.toString()).to.be.equal('5000000000000000000', '');
@@ -245,7 +245,7 @@ contract('MineNftToken', accounts => {
     console.log(`Waiting period #6`);
     sleep.sleep(10);
     await timelock.requestPayment({ from: accounts[1] });
-    balance = await algop.balanceOf(accounts[1]);
+    balance = await nft.balanceOf(accounts[1]);
     remainingAmount = await timelock.getRemainingAmount(accounts[1]);
     expect(remainingAmount.toString()).to.be.equal('0', 'remaining amount #4 period');
     expect(balance.toString()).to.be.equal('6000000000000000000', '');

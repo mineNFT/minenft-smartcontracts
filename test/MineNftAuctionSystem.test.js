@@ -4,29 +4,29 @@ const MineNftAuctionSystem = artifacts.require('MineNftAuctionSystem');
 var sleep = require('sleep');
 
 contract('MineNftAuctionSystem', accounts => {
-  let algop = null;
+  let nft = null;
   let busd = null;
   let eth = null;
   let gwei = null;
   let auction = null;
 
   it('should deploy the contracts', async () => {
-    algop = await MineNftToken.new("MineNft Token", "ALGOP");
+    nft = await MineNftToken.new("MineNft Token", "NFT");
     busd = await MineNftToken.new("BUSD", "BUSD");
     eth = await MineNftToken.new("ETH", "ETH");
 
-    gwei = await MineNftGweiItem.new(algop.address, accounts[8]);
+    gwei = await MineNftGweiItem.new(nft.address, accounts[8]);
 
     auction = await MineNftAuctionSystem.new();
 
     const amount = web3.utils.toWei('300', 'ether');
 
-    await algop.approve(gwei.address, amount);
+    await nft.approve(gwei.address, amount);
     await gwei.mint(1, 'new text', false, 0, 2, amount, 'URI');
   });
 
   it('should setup auction system', async () => {
-    await auction.setup(accounts[9], 1000, 250, [algop.address, busd.address, eth.address]);
+    await auction.setup(accounts[9], 1000, 250, [nft.address, busd.address, eth.address]);
 
     expect(await auction.getAddressFee()).to.be.equal(accounts[9]);
     expect((await auction.getAuctionFeeRate()).toString()).to.be.equal('1000');
@@ -35,7 +35,7 @@ contract('MineNftAuctionSystem', accounts => {
     const allowedTokens = await auction.getAllowedTokens();
 
     expect(allowedTokens.length).to.be.equal(3);
-    expect(allowedTokens[0]).to.be.equal(algop.address);
+    expect(allowedTokens[0]).to.be.equal(nft.address);
     expect(allowedTokens[1]).to.be.equal(busd.address);
     expect(allowedTokens[2]).to.be.equal(eth.address);
   });
@@ -45,14 +45,14 @@ contract('MineNftAuctionSystem', accounts => {
     const expirationTime = (now + 20).toString();
 
     try {
-      await auction.createAuction(0, gwei.address, 1, web3.utils.toWei('100', 'ether'), expirationTime, algop.address, 10000);
+      await auction.createAuction(0, gwei.address, 1, web3.utils.toWei('100', 'ether'), expirationTime, nft.address, 10000);
       throw {};
     } catch (e) {
       expect(e.reason).to.be.equal('MineNftAuctionSystem:ERC721_NOT_APPROVED');
     }
 
     await gwei.setApprovalForAll(auction.address, true);
-    await auction.createAuction(0, gwei.address, 1, web3.utils.toWei('100', 'ether'), expirationTime, algop.address, 10000);
+    await auction.createAuction(0, gwei.address, 1, web3.utils.toWei('100', 'ether'), expirationTime, nft.address, 10000);
 
     const auctionId = await auction.getAuctionId(gwei.address, 1);
 
@@ -63,19 +63,19 @@ contract('MineNftAuctionSystem', accounts => {
     expect(auctionInfo.tokenId.toString()).to.be.equal('1', 'fail to check tokenId');
     expect(auctionInfo.minimumAmount.toString()).to.be.equal(web3.utils.toWei('100', 'ether'), 'fail to check minimumAmount');
     expect(auctionInfo.auctionEndTime.toString()).to.be.equal(expirationTime, 'fail to check auctionEndTime');
-    expect(auctionInfo.tokenPriceAddress).to.be.equal(algop.address, 'fail to check tokenPriceAddress');
+    expect(auctionInfo.tokenPriceAddress).to.be.equal(nft.address, 'fail to check tokenPriceAddress');
     expect(auctionInfo.bidBackFee.toString()).to.be.equal('10000', 'fail to check bidBackFee');
   });
 
   it('should send bids', async () => {
     const transferAmount = web3.utils.toWei('1000', 'ether');
-    await algop.transfer(accounts[1], transferAmount);
-    await algop.transfer(accounts[2], transferAmount);
-    await algop.transfer(accounts[3], transferAmount);
+    await nft.transfer(accounts[1], transferAmount);
+    await nft.transfer(accounts[2], transferAmount);
+    await nft.transfer(accounts[3], transferAmount);
 
-    await algop.approve(auction.address, transferAmount, {from: accounts[1]});
-    await algop.approve(auction.address, transferAmount, {from: accounts[2]});
-    await algop.approve(auction.address, transferAmount, { from: accounts[3] });
+    await nft.approve(auction.address, transferAmount, {from: accounts[1]});
+    await nft.approve(auction.address, transferAmount, {from: accounts[2]});
+    await nft.approve(auction.address, transferAmount, { from: accounts[3] });
 
     const auctionId = await auction.getAuctionId(gwei.address, 1);
     let feeAddressBalance = 0;
@@ -90,8 +90,8 @@ contract('MineNftAuctionSystem', accounts => {
     }
 
     await auction.bid(auctionId, web3.utils.toWei('100', 'ether'), { from: accounts[1] });
-    feeAddressBalance = await algop.balanceOf(accounts[9]);
-    auctionBalance = await algop.balanceOf(auction.address);
+    feeAddressBalance = await nft.balanceOf(accounts[9]);
+    auctionBalance = await nft.balanceOf(auction.address);
 
     expect(feeAddressBalance.toString()).to.be.equal('2500000000000000000', 'fail to check feeAddressBalance #1');
     expect(auctionBalance.toString()).to.be.equal('97500000000000000000', 'fail to check auctionBalance #1');
@@ -105,8 +105,8 @@ contract('MineNftAuctionSystem', accounts => {
     }
 
     await auction.bid(auctionId, web3.utils.toWei('101', 'ether'), { from: accounts[2] });
-    feeAddressBalance = await algop.balanceOf(accounts[9]);
-    auctionBalance = await algop.balanceOf(auction.address);
+    feeAddressBalance = await nft.balanceOf(accounts[9]);
+    auctionBalance = await nft.balanceOf(auction.address);
 
     expect(feeAddressBalance.toString()).to.be.equal('5025000000000000000', 'fail to check feeAddressBalance #2');
     expect(auctionBalance.toString()).to.be.equal('195975000000000000000', 'fail to check auctionBalance #2');
@@ -117,8 +117,8 @@ contract('MineNftAuctionSystem', accounts => {
 
     expect(auctionInfo.highestBidder).to.be.equal(accounts[3], 'fail to check highestBidder');
     expect(auctionInfo.highestBid.toString()).to.be.equal(web3.utils.toWei('98.5725', 'ether'), 'fail to check highestBid');
-    feeAddressBalance = await algop.balanceOf(accounts[9]);
-    auctionBalance = await algop.balanceOf(auction.address);
+    feeAddressBalance = await nft.balanceOf(accounts[9]);
+    auctionBalance = await nft.balanceOf(auction.address);
 
     expect(feeAddressBalance.toString()).to.be.equal('7552500000000000000', 'fail to check feeAddressBalance #3');
     expect(auctionBalance.toString()).to.be.equal('294547500000000000000', 'fail to check auctionBalance #3');
@@ -139,8 +139,8 @@ contract('MineNftAuctionSystem', accounts => {
     sleep.sleep(20);
     await auction.endAction(auctionId);
 
-    const feeAddressBalance = await algop.balanceOf(accounts[9]);
-    const auctionBalance = await algop.balanceOf(auction.address);
+    const feeAddressBalance = await nft.balanceOf(accounts[9]);
+    const auctionBalance = await nft.balanceOf(auction.address);
 
     expect(feeAddressBalance.toString()).to.be.equal('96267750000000000000', 'fail to check feeAddressBalance');
     expect(auctionBalance.toString()).to.be.equal('195975000000000000000', 'fail to check auctionBalance');
@@ -155,9 +155,9 @@ contract('MineNftAuctionSystem', accounts => {
   it('should withdraw remaining amounts', async () => {
     const auctionId = await auction.getAuctionId(gwei.address, 1);
 
-    let account1Balance = await algop.balanceOf(accounts[1]);
-    let account2Balance = await algop.balanceOf(accounts[2]);
-    let account3Balance = await algop.balanceOf(accounts[3]);
+    let account1Balance = await nft.balanceOf(accounts[1]);
+    let account2Balance = await nft.balanceOf(accounts[2]);
+    let account3Balance = await nft.balanceOf(accounts[3]);
 
     expect(account1Balance.toString()).to.be.equal('900000000000000000000', 'fail to check account1Balance');
     expect(account2Balance.toString()).to.be.equal('899000000000000000000', 'fail to check account2Balance');
@@ -174,9 +174,9 @@ contract('MineNftAuctionSystem', accounts => {
       expect(e.reason).to.be.equal('MineNftAuctionSystem:NOTHING_TO_WITHDRAW');
     }
 
-    account1Balance = await algop.balanceOf(accounts[1]);
-    account2Balance = await algop.balanceOf(accounts[2]);
-    account3Balance = await algop.balanceOf(accounts[3]);
+    account1Balance = await nft.balanceOf(accounts[1]);
+    account2Balance = await nft.balanceOf(accounts[2]);
+    account3Balance = await nft.balanceOf(accounts[3]);
 
     expect(account1Balance.toString()).to.be.equal('997500000000000000000', 'fail to check account1Balance');
     expect(account2Balance.toString()).to.be.equal('997475000000000000000', 'fail to check account2Balance');

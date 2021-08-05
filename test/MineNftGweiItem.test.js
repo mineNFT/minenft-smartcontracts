@@ -2,12 +2,12 @@ const MineNftToken = artifacts.require('MineNftToken');
 const MineNftGweiItem = artifacts.require('MineNftGweiItem');
 
 contract('MineNftGweiItem', accounts => {
-  let algop = null;
+  let nft = null;
   let instance = null;
 
   it('should deploy the contracts', async () => {
-    algop = await MineNftToken.new("MineNft Token", "ALGOP");
-    instance = await MineNftGweiItem.new(algop.address, accounts[9]);
+    nft = await MineNftToken.new("MineNft Token", "NFT");
+    instance = await MineNftGweiItem.new(nft.address, accounts[9]);
   });
   
   it('should add account[2] as a white list manager', async () => {
@@ -37,8 +37,8 @@ contract('MineNftGweiItem', accounts => {
     const owner = accounts[2];
 
     const amount = await instance.getCurrentAmount(0, await instance.totalSupply());
-    algop.transfer(owner, amount, { from: accounts[0] });
-    await algop.approve(instance.address, amount, { from: owner });
+    nft.transfer(owner, amount, { from: accounts[0] });
+    await nft.approve(instance.address, amount, { from: owner });
 
     await instance.mint(1, 'new text', false, 0, 2, amount, 'URI', { from: owner });
     const returnedTokenURI = await instance.tokenURI(1);

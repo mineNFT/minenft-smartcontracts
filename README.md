@@ -1,6 +1,6 @@
 # MineNft 
 
-https://www.minenft.art
+https://www.minenft.live
 
 ## Deployed Contracts / Hash
 
